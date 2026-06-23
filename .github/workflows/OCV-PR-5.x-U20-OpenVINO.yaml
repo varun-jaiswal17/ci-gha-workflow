@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/OCV-PR-5.x-U20-OpenVINO.yaml'
   workflow_call:
+  workflow_dispatch:
 
 concurrency:
   group: OCV-PR-5.x-U20-OpenVINO-${{ github.ref }}
