@@ -1,0 +1,28 @@
+# Priority label configuration for OpenCV CI.
+#
+# Maps PR labels to workflow-name keywords.
+# When a reviewer adds a label to a PR, workflows whose filenames
+# contain ANY of the mapped keywords are dispatched first.
+#
+# Matching is case-insensitive substring against the workflow filename.
+# null means "match all workflows" (priority:ALL).
+#
+# To add a new platform (e.g. priority:CUDA), just add a row here.
+# No code changes needed.
+#
+# Keyword lists were verified against the 72 files in .github/workflows/:
+#   * Windows builds use the "W10" token (e.g. OCV-PR-4.x-W10-Vulkan.yaml);
+#     "Win" additionally covers the WinPack workflows and OCV-PR-Windows.yaml.
+#   * ARM builds use "ARM64"; the broader "ARM" matches the same files and
+#     does NOT catch loongarch64 (LoongArch is not ARM).
+#   * macOS builds use "macOS"; "iOS" is grouped under priority:mac (Apple).
+#   * Linux includes Ubuntu (U20), openEuler (O22) and Loongnix (loongnix);
+#     "Linux" also covers the Alpine and NoHAL variants.
+#   * U22/U24/Ubuntu/Darwin/aarch64 match nothing today; kept for future builds.
+
+label_platform_map:
+  priority:windows: ['W10', 'Win', 'Windows']
+  priority:linux: ['U20', 'U22', 'U24', 'Ubuntu', 'Linux', 'O22', 'loongnix']
+  priority:ARM: ['ARM64', 'ARM', 'aarch64']
+  priority:mac: ['macOS', 'Mac', 'Darwin', 'iOS']
+  priority:ALL: null
