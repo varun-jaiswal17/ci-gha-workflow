@@ -1,0 +1,80 @@
+name: Priority Flow Demo
+
+# Lightweight, runnable demo of the priority:linux ordering for a personal fork
+# (GitHub-hosted ubuntu runners only -- no opencv self-hosted infra needed).
+# Mirrors the priority-lane -> barrier -> main-lane structure of the real
+# PR-5.x.yaml, with stub jobs so you can SEE the ordering.
+#
+# Add the `priority:linux` label to a PR: Linux runs FIRST, the barrier waits,
+# then the rest run. With no label, everything runs together after an instant
+# barrier (i.e. the normal flow).
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled]
+    branches: [main]
+
+jobs:
+  # ─────────── PRIORITY LANE — only Linux for now; runs first when labeled ───────────
+  prio-Linux:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'priority:linux') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::notice::PRIORITY Linux running FIRST (label priority:linux detected)"
+          sleep 40
+          echo "PRIORITY Linux finished"
+
+  # ─────────── BARRIER — releases the rest once the priority lane is done ───────────
+  priority-gate:
+    needs: [prio-Linux]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "::notice::Barrier released - the rest of the flow may start now"
+
+  # ─────────── MAIN LANE (stubs) — all wait for the barrier ───────────
+  Linux:
+    needs: priority-gate
+    if: ${{ !cancelled() && !contains(github.event.pull_request.labels.*.name, 'priority:linux') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Linux (main lane)"
+          sleep 15
+
+  Windows:
+    needs: priority-gate
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Windows"
+          sleep 15
+
+  ARM64:
+    needs: priority-gate
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "ARM64"
+          sleep 15
+
+  macOS:
+    needs: priority-gate
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "macOS"
+          sleep 15
+
+  Android:
+    needs: priority-gate
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Android"
+          sleep 15
