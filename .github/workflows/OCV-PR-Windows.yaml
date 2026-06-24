@@ -19,6 +19,7 @@ on:
         default: "main"
         required: false
         type: string
+  workflow_dispatch:
 
 concurrency:
   group: OCV-PR-Windows-${{ github.ref }}

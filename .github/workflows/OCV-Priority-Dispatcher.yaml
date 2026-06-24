@@ -1,23 +1,23 @@
 name: OCV Priority Dispatcher
 
-# Priority-label dispatcher.
+# Priority-label dispatcher, scoped to the CURRENT 5.x PR flow.
 #
-# When a reviewer adds a `priority:*` label to a PR, dispatch the matching
-# platform workflows first. Label -> platform groupings come from
-# priority-label-mapping.md (repo root). This follows the repo's existing
-# label-gating convention:
+# Mirrors the jobs in opencv/opencv .github/workflows/PR-5.x.yaml: when a
+# reviewer adds a priority:<platform> label to a PR, dispatch first the same
+# workflows the 5.x flow runs for that platform -- not every workflow in the
+# repo. priority:ALL dispatches the entire 5.x flow.
+#
+# Follows the repo's existing label convention:
 #   if: contains(github.event.pull_request.labels.*.name, 'category:dnn_timvx')
 #
-# NOTE: a workflow can only be dispatched via the API once its file (with
-# `workflow_dispatch:` in `on:`) is present on the repository DEFAULT branch.
-# Workflows that are not yet dispatch-enabled simply log a warning here.
+# A workflow is only API-dispatchable once its file (with workflow_dispatch in
+# `on:`) is on the DEFAULT branch; ones not yet enabled just log a warning.
 
 on:
   pull_request:
     types: [labeled]
     branches: [main]
 
-# `gh workflow run` needs write access to the Actions API.
 permissions:
   actions: write
   contents: read
@@ -34,22 +34,9 @@ jobs:
           contains(github.event.pull_request.labels.*.name, 'priority:ALL')
         run: |
           for wf in \
-            OCV-Contrib-PR-3.4-W10.yaml \
-            OCV-Contrib-PR-4.x-W10.yaml \
-            OCV-Contrib-PR-5.x-W10.yaml \
-            OCV-Contrib-WinPack-4.x-W10.yaml \
-            OCV-PR-3.4-W10.yaml \
-            OCV-PR-4.x-W10-Vulkan.yaml \
-            OCV-PR-4.x-W10.yaml \
-            OCV-PR-5.x-W10-ARM64.yaml \
-            OCV-PR-5.x-W10-UWP.yaml \
-            OCV-PR-5.x-W10-Vulkan.yaml \
-            OCV-PR-5.x-W10.yaml \
-            OCV-PR-Windows.yaml \
-            OCV-WinPack-4.x-W10.yaml \
-            OCV-WinPack-5.x-W10.yaml ; do
+            OCV-PR-Windows.yaml ; do
             echo "-> dispatching $wf"
-            gh workflow run "$wf" --ref "${{ github.head_ref }}" \
+            gh workflow run "$wf" --repo "${{ github.repository }}" --ref "${{ github.head_ref }}" \
               || echo "::warning::Could not dispatch $wf (workflow_dispatch not enabled on the default branch yet?)"
           done
 
@@ -59,17 +46,13 @@ jobs:
           contains(github.event.pull_request.labels.*.name, 'priority:ALL')
         run: |
           for wf in \
-            OCV-Contrib-PR-3.4-U20.yaml \
-            OCV-Contrib-PR-4.x-U20-Cuda.yaml \
-            OCV-Contrib-PR-5.x-U20-Cuda.yaml \
-            OCV-Coverage-4.x-U20.yaml \
-            OCV-PR-3.4-U20.yaml \
-            OCV-PR-4.x-U20-Cuda.yaml \
-            OCV-PR-4.x-U20-OpenVINO.yaml \
-            OCV-PR-5.x-U20-Cuda.yaml \
-            OCV-PR-5.x-U20-OpenVINO.yaml ; do
+            OCV-PR-Linux.yaml \
+            OCV-PR-Linux-NoHAL.yaml \
+            OCV-PR-Linux-Alpine.yaml \
+            OCV-PR-5.x-U20-OpenVINO.yaml \
+            OCV-PR-5.x-U20-Cuda.yaml ; do
             echo "-> dispatching $wf"
-            gh workflow run "$wf" --ref "${{ github.head_ref }}" \
+            gh workflow run "$wf" --repo "${{ github.repository }}" --ref "${{ github.head_ref }}" \
               || echo "::warning::Could not dispatch $wf (workflow_dispatch not enabled on the default branch yet?)"
           done
 
@@ -79,27 +62,10 @@ jobs:
           contains(github.event.pull_request.labels.*.name, 'priority:ALL')
         run: |
           for wf in \
-            OCV-Contrib-PR-3.4-ARM64.yaml \
-            OCV-Contrib-PR-3.4-macOS-ARM64.yaml \
-            OCV-Contrib-PR-4.x-ARM64-FastCV.yaml \
-            OCV-Contrib-PR-4.x-ARM64.yaml \
-            OCV-Contrib-PR-4.x-macOS-ARM64.yaml \
-            OCV-Contrib-PR-5.x-ARM64-FastCV.yaml \
-            OCV-Contrib-PR-5.x-ARM64.yaml \
-            OCV-Contrib-PR-5.x-macOS-ARM64.yaml \
-            OCV-PR-3.4-ARM64.yaml \
-            OCV-PR-3.4-macOS-ARM64.yaml \
-            OCV-PR-4.x-ARM64-Debug.yaml \
-            OCV-PR-4.x-ARM64.yaml \
-            OCV-PR-4.x-macOS-ARM64-Vulkan.yaml \
-            OCV-PR-4.x-macOS-ARM64.yaml \
-            OCV-PR-5.x-ARM64-Debug.yaml \
             OCV-PR-5.x-ARM64.yaml \
-            OCV-PR-5.x-W10-ARM64.yaml \
-            OCV-PR-5.x-macOS-ARM64-Vulkan.yaml \
-            OCV-PR-5.x-macOS-ARM64.yaml ; do
+            OCV-PR-5.x-ARM64-Debug.yaml ; do
             echo "-> dispatching $wf"
-            gh workflow run "$wf" --ref "${{ github.head_ref }}" \
+            gh workflow run "$wf" --repo "${{ github.repository }}" --ref "${{ github.head_ref }}" \
               || echo "::warning::Could not dispatch $wf (workflow_dispatch not enabled on the default branch yet?)"
           done
 
@@ -109,61 +75,28 @@ jobs:
           contains(github.event.pull_request.labels.*.name, 'priority:ALL')
         run: |
           for wf in \
-            OCV-Contrib-PR-3.4-macOS-ARM64.yaml \
-            OCV-Contrib-PR-3.4-macOS-x86_64.yaml \
-            OCV-Contrib-PR-4.x-macOS-ARM64.yaml \
-            OCV-Contrib-PR-4.x-macOS-x86_64.yaml \
-            OCV-Contrib-PR-5.x-macOS-ARM64.yaml \
-            OCV-Contrib-PR-5.x-macOS-x86_64.yaml \
-            OCV-PR-3.4-iOS.yaml \
-            OCV-PR-3.4-macOS-ARM64.yaml \
-            OCV-PR-3.4-macOS-x86_64.yaml \
-            OCV-PR-4.x-iOS.yaml \
-            OCV-PR-4.x-macOS-ARM64-Vulkan.yaml \
-            OCV-PR-4.x-macOS-ARM64.yaml \
-            OCV-PR-4.x-macOS-x86_64.yaml \
-            OCV-PR-5.x-iOS.yaml \
-            OCV-PR-5.x-macOS-ARM64-Vulkan.yaml \
             OCV-PR-5.x-macOS-ARM64.yaml \
-            OCV-PR-5.x-macOS-x86_64.yaml ; do
+            OCV-PR-5.x-macOS-x86_64.yaml \
+            OCV-PR-5.x-iOS.yaml ; do
             echo "-> dispatching $wf"
-            gh workflow run "$wf" --ref "${{ github.head_ref }}" \
+            gh workflow run "$wf" --repo "${{ github.repository }}" --ref "${{ github.head_ref }}" \
               || echo "::warning::Could not dispatch $wf (workflow_dispatch not enabled on the default branch yet?)"
           done
 
-      - name: "Dispatch priority: ALL (remaining workflows)"
-        # priority:ALL is handled co-operatively: the four platform steps above
-        # each include `|| priority:ALL`, so they already cover Windows, Linux
-        # (incl. CUDA), ARM and Mac/iOS. This step dispatches everything else
-        # (Android, RISC-V and uncategorised workflows) so priority:ALL covers
-        # every workflow exactly once -- no duplicate dispatches.
+      - name: "Dispatch priority: ALL (remaining 5.x-flow workflows)"
+        # The four platform steps above already fire on `|| priority:ALL`
+        # (Windows/Linux/ARM/Mac). This step adds the rest of the 5.x flow
+        # (Android, RISC-V, TIM-VX, docs) so priority:ALL dispatches the whole
+        # flow exactly once -- no duplicate dispatches.
         if: contains(github.event.pull_request.labels.*.name, 'priority:ALL')
         run: |
           for wf in \
-            OCV-4.x-Android-SDK.yaml \
-            OCV-PR-3.4-Android.yaml \
-            OCV-PR-4.x-Android-Test.yaml \
             OCV-PR-5.x-Android.yaml \
-            OCV-Contrib-PR-4.x-RISCV.yaml \
-            OCV-Contrib-PR-5.x-RISCV.yaml \
-            OCV-Nightly-RISCV.yaml \
-            OCV-PR-4.x-RISCV.yaml \
             OCV-PR-5.x-RISCV.yaml \
-            OCV-CodeQL.yaml \
-            OCV-Contrib-PR-4.x-O22-CANN.yaml \
-            OCV-DNN-models-update.yaml \
-            OCV-Git-Cache.yaml \
-            OCV-PR-3.4-docs.yaml \
-            OCV-PR-4.x-docs.yaml \
-            OCV-PR-4.x-loongnix-loongarch64.yaml \
-            OCV-PR-5.x-docs.yaml \
-            OCV-PR-Linux-Alpine.yaml \
-            OCV-PR-Linux-NoHAL.yaml \
-            OCV-PR-Linux.yaml \
             OCV-timvx-backend-tests-4.x.yml \
-            build_docs_schedule.yaml ; do
+            OCV-PR-5.x-docs.yaml ; do
             echo "-> dispatching $wf"
-            gh workflow run "$wf" --ref "${{ github.head_ref }}" \
+            gh workflow run "$wf" --repo "${{ github.repository }}" --ref "${{ github.head_ref }}" \
               || echo "::warning::Could not dispatch $wf (workflow_dispatch not enabled on the default branch yet?)"
           done
 
@@ -173,17 +106,17 @@ jobs:
           echo "Labels on this PR:"
           echo '${{ toJSON(github.event.pull_request.labels.*.name) }}'
           {
-            echo "## Priority dispatch summary"
+            echo "## Priority dispatch summary (scoped to the 5.x flow)"
             echo ""
             echo "Triggering label: \`${{ github.event.label.name }}\`"
             echo ""
-            echo "| priority label | detected | dispatched group |"
-            echo "|----------------|:--------:|------------------|"
-            echo "| priority:windows | ${{ contains(github.event.pull_request.labels.*.name, 'priority:windows') }} | Windows (14) |"
-            echo "| priority:linux   | ${{ contains(github.event.pull_request.labels.*.name, 'priority:linux') }} | Linux (9) |"
-            echo "| priority:ARM     | ${{ contains(github.event.pull_request.labels.*.name, 'priority:ARM') }} | ARM (19) |"
-            echo "| priority:mac     | ${{ contains(github.event.pull_request.labels.*.name, 'priority:mac') }} | Mac/iOS (17) |"
-            echo "| priority:ALL     | ${{ contains(github.event.pull_request.labels.*.name, 'priority:ALL') }} | every workflow |"
+            echo "| priority label | detected | dispatches |"
+            echo "|----------------|:--------:|------------|"
+            echo "| priority:windows | ${{ contains(github.event.pull_request.labels.*.name, 'priority:windows') }} | OCV-PR-Windows |"
+            echo "| priority:linux   | ${{ contains(github.event.pull_request.labels.*.name, 'priority:linux') }} | Linux + NoHAL + Alpine + OpenVINO + CUDA |"
+            echo "| priority:ARM     | ${{ contains(github.event.pull_request.labels.*.name, 'priority:ARM') }} | 5.x ARM64 (+ Debug) |"
+            echo "| priority:mac     | ${{ contains(github.event.pull_request.labels.*.name, 'priority:mac') }} | 5.x macOS ARM64/x86_64 + iOS |"
+            echo "| priority:ALL     | ${{ contains(github.event.pull_request.labels.*.name, 'priority:ALL') }} | entire 5.x flow |"
             echo ""
-            echo "_Per-workflow dispatch results (and any warnings for not-yet-enabled workflows) are in the step logs above._"
+            echo "_Per-workflow results (and warnings for not-yet-enabled workflows) are in the step logs above._"
           } >> "$GITHUB_STEP_SUMMARY"
