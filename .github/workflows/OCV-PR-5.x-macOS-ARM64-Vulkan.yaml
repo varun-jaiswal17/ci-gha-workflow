@@ -27,7 +27,23 @@ env:
   OPENCV_VULKAN_RUNTIME: '/opt/VulkanSDK/1.3.239.0/MoltenVK/dylib/macOS/libMoltenVK.dylib'
 
 jobs:
+  # --- priority gate: hold this run on a cheap runner until the scheduler releases it ---
+  priority-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for priority release
+        uses: ./priority-gate
+        with:
+          workflow: "OCV PR:5.x macOS ARM64 Vulkan"
+          pool: "opencv-cn-mac-arm64"
+          max-concurrent: "1"   # set to this pool's runner capacity
+          token: ${{ secrets.CI_INTEL_PAT || github.token }}
+
   BuildAndTest:
+    needs: priority-gate
     runs-on: opencv-cn-mac-arm64
     defaults:
       run:
@@ -124,3 +140,18 @@ jobs:
       if: ${{ always() && steps.build-opencv.outcome == 'success' }}
       run: ./bin/opencv_perf_dnn --perf_impl=plain --perf_min_samples=1 --perf_force_samples=1 --perf_verify_sanity --skip_unstable=1 --gtest_filter=${{ env.GTEST_FILTER_STRING }} --perf_threads=$PARALLEL_JOBS
       working-directory: ${{ github.workspace }}/build
+
+  # --- release this run's priority slot for the next waiting run ---
+  release-priority-slot:
+    needs: [BuildAndTest]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release priority slot
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_INTEL_PAT || github.token }}
+          CI_INTEL_REPO: ${{ github.repository }}
+        run: python3 -m ci_intel.scheduler.gate release --run-id "${{ github.run_id }}"

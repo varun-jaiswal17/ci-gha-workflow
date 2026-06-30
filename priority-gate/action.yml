@@ -13,9 +13,18 @@ inputs:
   workflow:
     description: "Workflow display name used for scoring (match the YAML 'name:' field)"
     required: true
+  pool:
+    description: "Queue partition — use the runs-on label so each runner pool gets its own limit"
+    default: ""
   max-concurrent:
-    description: "How many runs may be active at once (model the runner pool size)"
+    description: "How many runs may be active at once in this pool (set to the pool's runner count)"
     default: "1"
+  store-repo:
+    description: "Repo whose ci-intel-data branch holds the queue + history (default: this repo)"
+    default: ""
+  token:
+    description: "Token with contents:write on the store repo (default: GITHUB_TOKEN)"
+    default: ""
   timeout:
     description: "Seconds to wait before failing open and releasing anyway"
     default: "1800"
@@ -29,14 +38,15 @@ runs:
     - name: Wait for priority release
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ github.token }}
-        CI_INTEL_REPO: ${{ github.repository }}
+        GITHUB_TOKEN: ${{ inputs.token != '' && inputs.token || github.token }}
+        CI_INTEL_REPO: ${{ inputs.store-repo != '' && inputs.store-repo || github.repository }}
       run: |
         python3 -m ci_intel.scheduler.gate enter \
           --run-id "${{ github.run_id }}" \
           --workflow "${{ inputs.workflow }}" \
           --pr "${{ github.event.pull_request.number || 0 }}" \
           --branch "${{ github.head_ref }}" \
+          --group "${{ inputs.pool }}" \
           --max-concurrent "${{ inputs.max-concurrent }}" \
           --timeout "${{ inputs.timeout }}" \
           --poll-interval "${{ inputs.poll-interval }}"
