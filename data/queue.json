@@ -8,6 +8,15 @@
       "group": "opencv-cn-mac-arm64",
       "state": "running",
       "heartbeat": 1782829946.066485
+    },
+    {
+      "run_id": 28452249686,
+      "workflow": "OCV PR:5.x macOS x86_64",
+      "pr_number": 7,
+      "score": 102.00230946882218,
+      "group": "opencv-cn-mac-x86-64",
+      "state": "waiting",
+      "heartbeat": 1782829946.025179
     }
   ]
 }
