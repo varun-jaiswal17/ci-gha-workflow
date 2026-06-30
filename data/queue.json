@@ -33,8 +33,8 @@
       "pr_number": 7,
       "score": 102.00023846428998,
       "group": "opencv-cn-lin-arm64",
-      "state": "waiting",
-      "heartbeat": 1782829945.794594
+      "state": "running",
+      "heartbeat": 1782829951.1865706
     },
     {
       "run_id": 28452249067,
