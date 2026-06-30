@@ -1,14 +1,6 @@
 {
   "entries": [
     {
-      "run_id": 999999,
-      "workflow": "BLOCKER",
-      "pr_number": null,
-      "score": 99999,
-      "state": "running",
-      "heartbeat": 1782828280.0811574
-    },
-    {
       "run_id": 28449712361,
       "workflow": "Priority Flow Demo",
       "pr_number": 4,
