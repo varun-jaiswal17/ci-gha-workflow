@@ -60,15 +60,17 @@ def _stores(now_fn=time.time):
 
 def cmd_enter(args, history, queue, now_fn=time.time, sleep_fn=time.sleep):
     """Score this run, enroll it, and block until released. Always exits 0."""
+    group = getattr(args, "group", None) or None
     job = {"branch": args.branch or "", "workflow": args.workflow, "pr_number": args.pr}
     score = compute_score(job, history, DEFAULT_WEIGHTS)
-    print(f"[gate] run {args.run_id} workflow={args.workflow!r} pr={args.pr} score={score:.3f}")
+    print(f"[gate] run {args.run_id} workflow={args.workflow!r} pr={args.pr} "
+          f"pool={group or 'global'} score={score:.3f}")
 
-    queue.enter(args.run_id, args.workflow, args.pr, score, now_fn())
+    queue.enter(args.run_id, args.workflow, args.pr, score, now_fn(), group=group)
 
     start = now_fn()
     while True:
-        if queue.try_claim(args.run_id, args.max_concurrent, STALE_TTL, now_fn()):
+        if queue.try_claim(args.run_id, args.max_concurrent, STALE_TTL, now_fn(), group=group):
             waited = int(now_fn() - start)
             print(f"[gate] RELEASED run {args.run_id} after {waited}s (score={score:.3f})")
             return 0
@@ -79,10 +81,11 @@ def cmd_enter(args, history, queue, now_fn=time.time, sleep_fn=time.sleep):
             queue.force_claim(args.run_id, now_fn())
             return 0
 
-        waiting = [e for e in queue.snapshot() if e["state"] == "waiting"]
+        waiting = [e for e in queue.snapshot()
+                   if e["state"] == "waiting" and e.get("group") == group]
         ahead = sum(1 for e in waiting if (-e["score"], e["run_id"]) < (-score, args.run_id))
-        print(f"[gate] run {args.run_id} waiting — {ahead} higher-priority run(s) ahead; "
-              f"re-check in {args.poll_interval}s")
+        print(f"[gate] run {args.run_id} waiting in pool {group or 'global'} — "
+              f"{ahead} higher-priority run(s) ahead; re-check in {args.poll_interval}s")
         sleep_fn(args.poll_interval)
 
 
@@ -102,6 +105,8 @@ def build_parser():
     enter.add_argument("--workflow", required=True)
     enter.add_argument("--pr", type=int, default=None)
     enter.add_argument("--branch", default=None)
+    enter.add_argument("--group", default=None,
+                       help="Queue partition (use the runner-pool label). Omit for one global pool.")
     enter.add_argument("--max-concurrent", type=int, default=DEFAULT_MAX_CONCURRENT)
     enter.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     enter.add_argument("--poll-interval", type=int, default=DEFAULT_POLL_INTERVAL)

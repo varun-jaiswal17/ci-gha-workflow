@@ -52,8 +52,15 @@ class QueueStore:
     # Public operations — each is one atomic transaction on the branch
     # ------------------------------------------------------------------
 
-    def enter(self, run_id, workflow, pr_number, score, now):
-        """Register this run as waiting (idempotent — re-entering is a no-op)."""
+    def enter(self, run_id, workflow, pr_number, score, now, group=None):
+        """
+        Register this run as waiting (idempotent — re-entering is a no-op).
+
+        `group` partitions the queue: runs only compete with others in the same
+        group (use the runner-pool label, so different hardware pools each get
+        their own concurrency limit and ordering).  group=None is a single
+        global pool.
+        """
         def mutate(queue):
             entries = queue.setdefault("entries", [])
             if not any(e["run_id"] == run_id for e in entries):
@@ -62,6 +69,7 @@ class QueueStore:
                     "workflow": workflow,
                     "pr_number": pr_number,
                     "score": score,
+                    "group": group,
                     "state": "waiting",
                     "heartbeat": now,
                 })
@@ -69,13 +77,16 @@ class QueueStore:
 
         self._transaction(mutate, f"gate: enter run {run_id}")
 
-    def try_claim(self, run_id, max_concurrent, stale_ttl, now):
+    def try_claim(self, run_id, max_concurrent, stale_ttl, now, group=None):
         """
         Atomically decide whether this run may start.
 
-        Returns True (and marks the run "running") iff:
+        Returns True (and marks the run "running") iff, within this run's group:
           - fewer than max_concurrent runs are currently "running", AND
           - this run is the highest-scored among all "waiting" runs.
+
+        Slots and ordering are scoped to `group` (the runner pool), so contention
+        on one pool never blocks another.  group=None is a single global pool.
 
         Stale entries (heartbeat older than stale_ttl — a crashed or cancelled
         run that never released its slot) are pruned first so they can't block
@@ -91,9 +102,10 @@ class QueueStore:
                 if e["run_id"] == run_id:
                     e["heartbeat"] = now
 
-            running = [e for e in entries if e["state"] == "running"]
+            in_group = [e for e in entries if e.get("group") == group]
+            running = [e for e in in_group if e["state"] == "running"]
             waiting = sorted(
-                (e for e in entries if e["state"] == "waiting"),
+                (e for e in in_group if e["state"] == "waiting"),
                 key=lambda e: (-e["score"], e["run_id"]),  # high score first; FIFO tiebreak
             )
 
