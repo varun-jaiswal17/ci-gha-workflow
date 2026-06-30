@@ -1,42 +1,6 @@
 {
   "entries": [
     {
-      "run_id": 28452248927,
-      "workflow": "OCV PR:5.x macOS ARM64",
-      "pr_number": 7,
-      "score": 102.00029485478402,
-      "group": "opencv-cn-mac-arm64",
-      "state": "running",
-      "heartbeat": 1782829946.066485
-    },
-    {
-      "run_id": 28452249686,
-      "workflow": "OCV PR:5.x macOS x86_64",
-      "pr_number": 7,
-      "score": 102.00230946882218,
-      "group": "opencv-cn-mac-x86-64",
-      "state": "running",
-      "heartbeat": 1782829948.1226716
-    },
-    {
-      "run_id": 28452249279,
-      "workflow": "OCV PR:5.x docs",
-      "pr_number": 7,
-      "score": 102.00166666666667,
-      "group": "ubuntu-22.04",
-      "state": "running",
-      "heartbeat": 1782829950.0049217
-    },
-    {
-      "run_id": 28452249219,
-      "workflow": "OCV PR:5.x ARM64",
-      "pr_number": 7,
-      "score": 102.00023846428998,
-      "group": "opencv-cn-lin-arm64",
-      "state": "running",
-      "heartbeat": 1782829951.1865706
-    },
-    {
       "run_id": 28452249067,
       "workflow": "OCV PR:5.x W10 UWP",
       "pr_number": 7,
@@ -52,7 +16,7 @@
       "score": 102.00166666666667,
       "group": "opencv-cn-win",
       "state": "waiting",
-      "heartbeat": 1782830819.8884528
+      "heartbeat": 1782830851.930193
     }
   ]
 }
