@@ -5,7 +5,7 @@
       "workflow": "BLOCKER",
       "pr_number": null,
       "score": 99999,
-      "state": "waiting",
+      "state": "running",
       "heartbeat": 1782827619.9248705
     }
   ]
