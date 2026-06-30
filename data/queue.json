@@ -26,6 +26,15 @@
       "group": "ubuntu-22.04",
       "state": "waiting",
       "heartbeat": 1782829945.4401076
+    },
+    {
+      "run_id": 28452249219,
+      "workflow": "OCV PR:5.x ARM64",
+      "pr_number": 7,
+      "score": 102.00023846428998,
+      "group": "opencv-cn-lin-arm64",
+      "state": "waiting",
+      "heartbeat": 1782829945.794594
     }
   ]
 }
