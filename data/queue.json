@@ -24,8 +24,8 @@
       "pr_number": 7,
       "score": 102.00166666666667,
       "group": "ubuntu-22.04",
-      "state": "waiting",
-      "heartbeat": 1782829945.4401076
+      "state": "running",
+      "heartbeat": 1782829950.0049217
     },
     {
       "run_id": 28452249219,
