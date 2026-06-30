@@ -1,0 +1,7 @@
+Setting up runner...
+Pulling docker image opencv/build:latest
+Starting test job
+Collecting test binaries
+Running opencv_test_core
+out of memory
+Killed

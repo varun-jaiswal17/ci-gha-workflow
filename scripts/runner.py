@@ -141,6 +141,8 @@ if __name__ == "__main__":
     parser.add_argument("--bindir", default="bin", type=Path, help="Directory with binaries (relative to workdir)")
     parser.add_argument("--verbose", action='store_true', help="Output all lines")
     parser.add_argument("--summary", type=Path, help="Path to summary file to generate")
+    parser.add_argument("--results-json", type=Path, default=None,
+                        help="If set, write machine-readable per-binary results here (for CI-Intel ingest)")
     parser.add_argument("--exesuffix", type=str, help="Suffix for executables (e.g. '.exe' or 'd.exe')")
     args = parser.parse_args()
 
@@ -159,6 +161,14 @@ if __name__ == "__main__":
     sumfd = None
     if args.summary:
         sumfd = open(args.summary, "wb")
+
+    results = []
+
+    def module_of(binary_name):
+        for prefix in ("opencv_test_", "opencv_perf_", "opencv_"):
+            if binary_name.startswith(prefix):
+                return binary_name[len(prefix):]
+        return binary_name
 
     for name in suite:
         wrap = []
@@ -215,9 +225,22 @@ if __name__ == "__main__":
             sumfd.write(sum.format(name).encode("utf-8"))
 
         status &= res
+        results.append({
+            "binary": name,
+            "module": module_of(name),
+            "passed": (res is True),
+            "log_file": args.prefix + name + ".txt",
+        })
 
     if sumfd:
         sumfd.close()
+
+    if args.results_json:
+        args.results_json.write_text(json.dumps({
+            "plan": str(args.plan),
+            "overall_pass": bool(status),
+            "binaries": results,
+        }, indent=2), encoding="utf-8")
 
     if status:
         print("::notice::Testing PASS (plan: {}, count: {})".format(args.plan, len(suite)))
