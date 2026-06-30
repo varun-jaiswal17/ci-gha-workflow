@@ -1,0 +1,1 @@
+{"run_id":28194419416,"pr_number":326,"branch":"dnn","workflow":"OCV PR:5.x ARM64","conclusion":"failure","category":"BUILD","error_signature":"8e1af4195f4e","module":null,"failing_tests":[],"duration_sec":2801,"created_at":"2026-06-25T20:01:01Z","backfilled":true}
