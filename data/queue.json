@@ -9,14 +9,6 @@
       "heartbeat": 1782828525.8240693
     },
     {
-      "run_id": 28450395852,
-      "workflow": "Priority Flow Demo",
-      "pr_number": 5,
-      "score": 102.01666666666667,
-      "state": "running",
-      "heartbeat": 1782828469.7517056
-    },
-    {
       "run_id": 28450394927,
       "workflow": "Priority Flow Demo",
       "pr_number": 4,
