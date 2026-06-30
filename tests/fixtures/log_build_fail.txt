@@ -1,5 +1,0 @@
-note: variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without
-warning: unused variable 'x' [-Wunused-variable]
-/workspace/opencv/modules/core/src/matrix.cpp:42:10: error: unknown type name 'cv::Mat'
-FAILED: modules/core/CMakeFiles/opencv_core.dir/src/matrix.cpp.o
-ninja: build stopped: subcommand failed.
