@@ -1,0 +1,42 @@
+name: priority-gate
+description: "Hold a workflow run until the priority scheduler releases it (score-ordered, deadlock-safe)."
+
+# Drop this in as the FIRST job of a gated workflow and make the expensive jobs
+# `needs:` it.  The gate scores this (PR, workflow) from the ci-intel-data store
+# and blocks on a cheap ubuntu runner until it is this run's turn — so the scarce
+# self-hosted runner is never occupied while waiting.
+#
+# Requires the job to have: permissions: { contents: write }
+# and env GITHUB_TOKEN available (the default GITHUB_TOKEN is sufficient).
+
+inputs:
+  workflow:
+    description: "Workflow display name used for scoring (match the YAML 'name:' field)"
+    required: true
+  max-concurrent:
+    description: "How many runs may be active at once (model the runner pool size)"
+    default: "1"
+  timeout:
+    description: "Seconds to wait before failing open and releasing anyway"
+    default: "1800"
+  poll-interval:
+    description: "Seconds between queue checks"
+    default: "30"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Wait for priority release
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        CI_INTEL_REPO: ${{ github.repository }}
+      run: |
+        python3 -m ci_intel.scheduler.gate enter \
+          --run-id "${{ github.run_id }}" \
+          --workflow "${{ inputs.workflow }}" \
+          --pr "${{ github.event.pull_request.number || 0 }}" \
+          --branch "${{ github.head_ref }}" \
+          --max-concurrent "${{ inputs.max-concurrent }}" \
+          --timeout "${{ inputs.timeout }}" \
+          --poll-interval "${{ inputs.poll-interval }}"

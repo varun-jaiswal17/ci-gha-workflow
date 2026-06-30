@@ -1,46 +1,48 @@
 name: Priority Flow Demo
 
-# Lightweight, runnable demo of the priority:linux ordering for a personal fork
-# (GitHub-hosted ubuntu runners only -- no opencv self-hosted infra needed).
-# Mirrors the priority-lane -> barrier -> main-lane structure of the real
-# PR-5.x.yaml, with stub jobs so you can SEE the ordering.
+# Runnable demo of SCORE-DRIVEN priority gating on GitHub-hosted runners only
+# (no opencv self-hosted infra needed), so it works on a personal fork.
 #
-# Add the `priority:linux` label to a PR: Linux runs FIRST, the barrier waits,
-# then the rest run. With no label, everything runs together after an instant
-# barrier (i.e. the normal flow).
+# The `priority-gate` job blocks on a cheap ubuntu runner until the scheduler
+# releases this run — highest score first, one run active at a time
+# (max-concurrent: 1).  The stub "heavy" jobs all `needs: priority-gate`, so
+# they only start once released; a final job frees the slot for the next run.
+#
+# To SEE the ordering: open two PRs at once.  The one whose (PR, workflow) scores
+# higher in the ci-intel-data store is released and runs first; the other waits
+# in the gate until the first finishes.  Scores come from the backfilled history.
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, labeled]
+    types: [opened, reopened, synchronize]
     branches: [main]
 
+permissions:
+  contents: write   # the gate reads/writes the ci-intel-data queue branch
+
 jobs:
-  # ─────────── PRIORITY LANE — only Linux for now; runs first when labeled ───────────
-  prio-Linux:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'priority:linux') }}
+  # ─────────── GATE — score this run and hold until it is our turn ───────────
+  priority-gate:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "::notice::PRIORITY Linux running FIRST (label priority:linux detected)"
-          sleep 40
-          echo "PRIORITY Linux finished"
+      - uses: actions/checkout@v4
+      - name: Wait for priority release
+        uses: ./priority-gate
+        with:
+          workflow: "Priority Flow Demo"
+          max-concurrent: "1"
+          timeout: "1800"
+          poll-interval: "15"
 
-  # ─────────── BARRIER — releases the rest once the priority lane is done ───────────
-  priority-gate:
-    needs: [prio-Linux]
+  # ─────────── MAIN LANE (stubs) — all wait for the gate to release ───────────
+  Linux:
+    needs: priority-gate
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "::notice::Barrier released - the rest of the flow may start now"
-
-  # ─────────── MAIN LANE (stubs) — all wait for the barrier ───────────
-  Linux:
-    needs: priority-gate
-    if: ${{ !cancelled() && !contains(github.event.pull_request.labels.*.name, 'priority:linux') }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "Linux (main lane)"
+      - shell: bash
+        run: |
+          echo "Linux running"
           sleep 15
 
   Windows:
@@ -48,8 +50,9 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "Windows"
+      - shell: bash
+        run: |
+          echo "Windows running"
           sleep 15
 
   ARM64:
@@ -57,8 +60,9 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "ARM64"
+      - shell: bash
+        run: |
+          echo "ARM64 running"
           sleep 15
 
   macOS:
@@ -66,15 +70,21 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "macOS"
+      - shell: bash
+        run: |
+          echo "macOS running"
           sleep 15
 
-  Android:
-    needs: priority-gate
-    if: ${{ !cancelled() }}
+  # ─────────── RELEASE — free the slot for the next waiting run ───────────
+  release-slot:
+    needs: [Linux, Windows, ARM64, macOS]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "Android"
-          sleep 15
+      - uses: actions/checkout@v4
+      - name: Release priority slot
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_INTEL_REPO: ${{ github.repository }}
+        run: |
+          python3 -m ci_intel.scheduler.gate release --run-id "${{ github.run_id }}"
