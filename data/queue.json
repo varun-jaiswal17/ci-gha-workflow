@@ -44,6 +44,15 @@
       "group": "opencv-cn-win",
       "state": "running",
       "heartbeat": 1782829953.402254
+    },
+    {
+      "run_id": 28452249193,
+      "workflow": "OCV PR:5.x W10-ARM64",
+      "pr_number": 7,
+      "score": 102.00166666666667,
+      "group": "opencv-cn-win",
+      "state": "waiting",
+      "heartbeat": 1782829947.9841707
     }
   ]
 }
