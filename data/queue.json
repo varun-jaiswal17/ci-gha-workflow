@@ -6,8 +6,8 @@
       "pr_number": 7,
       "score": 102.00029485478402,
       "group": "opencv-cn-mac-arm64",
-      "state": "waiting",
-      "heartbeat": 1782829945.0349166
+      "state": "running",
+      "heartbeat": 1782829946.066485
     }
   ]
 }
