@@ -1,3 +1,13 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "run_id": 28452248927,
+      "workflow": "OCV PR:5.x macOS ARM64",
+      "pr_number": 7,
+      "score": 102.00029485478402,
+      "group": "opencv-cn-mac-arm64",
+      "state": "waiting",
+      "heartbeat": 1782829945.0349166
+    }
+  ]
 }
