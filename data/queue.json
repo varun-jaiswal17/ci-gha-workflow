@@ -5,8 +5,8 @@
       "workflow": "Priority Flow Demo",
       "pr_number": 3,
       "score": 102.00166666666667,
-      "state": "waiting",
-      "heartbeat": 1782826026.838902
+      "state": "running",
+      "heartbeat": 1782826028.467136
     }
   ]
 }
