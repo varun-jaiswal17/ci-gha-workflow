@@ -1,13 +1,3 @@
 {
-  "entries": [
-    {
-      "run_id": 28452249193,
-      "workflow": "OCV PR:5.x W10-ARM64",
-      "pr_number": 7,
-      "score": 102.00166666666667,
-      "group": "opencv-cn-win",
-      "state": "running",
-      "heartbeat": 1782830883.8241847
-    }
-  ]
+  "entries": []
 }
