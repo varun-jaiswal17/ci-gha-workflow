@@ -1,7 +1,0 @@
-[ RUN      ] Core_Mat.create
-[       OK ] Core_Mat.create (1 ms)
-[ RUN      ] Core_Mat.copyTo
-[  FAILED  ] Core_Mat.copyTo (3 ms)
-[----------] Global test environment tear-down
-[  FAILED  ] 1 test, listed below:
-[  FAILED  ] Core_Mat.copyTo
